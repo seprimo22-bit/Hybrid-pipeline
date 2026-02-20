@@ -2,65 +2,103 @@
 <html>
 <head>
     <title>Hybrid Integration Pipeline</title>
+
     <style>
         body {
-            font-family: Arial, sans-serif;
             background: #111;
             color: #eee;
+            font-family: Arial, sans-serif;
             padding: 40px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
         }
 
         textarea {
             width: 100%;
-            height: 120px;
-            margin-bottom: 20px;
-            padding: 10px;
+            height: 200px;
+            padding: 12px;
             font-size: 16px;
+            background: #222;
+            color: #eee;
+            border: 1px solid #444;
+            margin-bottom: 20px;
         }
 
         button {
-            padding: 12px 20px;
+            padding: 12px 24px;
             font-size: 16px;
-            cursor: pointer;
+            font-weight: bold;
             background: #ffaa00;
             border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #ffbb33;
         }
 
         #output {
             margin-top: 30px;
             padding: 20px;
             background: #222;
+            border-left: 4px solid #ffaa00;
             white-space: pre-wrap;
+            min-height: 150px;
         }
     </style>
 </head>
+
 <body>
 
-    <h1>Hybrid Integration Pipeline</h1>
+<h1>🟡 Hybrid Integration Pipeline</h1>
 
-    <textarea id="pipelineInput" placeholder="Enter your reasoning or question here..."></textarea>
+<textarea id="pipelineInput"
+placeholder="Paste article or reasoning text here..."></textarea>
 
-    <button onclick="runPipeline()">Run Hybrid Pipeline</button>
+<button onclick="runPipeline()">Run Hybrid Pipeline</button>
 
-    <div id="output">Awaiting input...</div>
+<div id="output">Awaiting input...</div>
 
 <script>
 async function runPipeline() {
 
-    const input = document.getElementById("pipelineInput").value;
+    const inputField = document.getElementById("pipelineInput");
+    const outputDiv = document.getElementById("output");
 
-    const response = await fetch("/run_pipeline", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ input: input })
-    });
+    const inputText = inputField.value.trim();
 
-    const data = await response.json();
+    if (!inputText) {
+        outputDiv.innerText = "Please enter text for analysis.";
+        return;
+    }
 
-    document.getElementById("output").innerText =
-        JSON.stringify(data, null, 2);
+    outputDiv.innerText = "Running 7-layer Hybrid Pipeline...";
+
+    try {
+
+        const response = await fetch("/run_pipeline", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ input: inputText })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+            outputDiv.innerText = "Pipeline Error:\n" + data.error;
+            return;
+        }
+
+        outputDiv.innerText = data.result;
+
+    } catch (error) {
+        outputDiv.innerText =
+            "Connection error. Check server logs or deployment.";
+    }
 }
 </script>
 
