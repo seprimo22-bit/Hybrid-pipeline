@@ -1,98 +1,208 @@
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, render_template, request, jsonify
+from openai import OpenAI
+import os
 
 app = Flask(__name__)
-
-# -------------------------
-# SIMPLE HYBRID ANALYSIS
-# -------------------------
-
-def hybrid_analysis(article, context):
-
-    words = article.split()
-    word_count = len(words)
-
-    ambiguity_terms = ["may", "might", "could", "possibly", "suggests"]
-    ambiguity_hits = sum(article.lower().count(t) for t in ambiguity_terms)
-
-    context_matches = 0
-    for word in context:
-        if word.lower() in article.lower():
-            context_matches += 1
-
-    confidence = round(min((word_count / 100) + (context_matches * 0.1), 1.0), 3)
-
-    return {
-        "classification": {
-            "Facts": [article[:200]] if article else [],
-            "Hypotheses": [],
-            "Analytical Indicators": context,
-            "Speculation": [],
-            "Open Questions": []
-        },
-        "metrics": {
-            "word_count": word_count,
-            "ambiguity_hits": ambiguity_hits,
-            "context_matches": context_matches,
-            "confidence_score": confidence
-        }
-    }
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-# -------------------------
-# ROUTES
-# -------------------------
+# ---------------------------
+# 1️⃣ Cognitive Intake Layer
+# ---------------------------
+def cognitive_intake(text):
+    prompt = f"""
+Separate factual statements from assumptions in the text below.
+Do not interpret. Do not summarize.
+Return:
+- factual_statements
+- assumptions
 
+Text:
+{text}
+"""
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        temperature=0,
+        messages=[
+            {"role": "system", "content": "You perform epistemic intake filtering."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response.choices[0].message.content
+
+
+# ---------------------------
+# 2️⃣ Interpretation Stabilization
+# ---------------------------
+def interpretation_stabilization(text):
+    prompt = f"""
+Normalize ambiguity and remove emotional or narrative distortion.
+Return only stabilized interpretation.
+
+Text:
+{text}
+"""
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        temperature=0,
+        messages=[
+            {"role": "system", "content": "You stabilize interpretation and reduce volatility."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response.choices[0].message.content
+
+
+# ---------------------------
+# 3️⃣ Translation & Structuring
+# ---------------------------
+def translation_layer(text):
+    prompt = f"""
+Convert the text into structured analytical data.
+Identify:
+- constraints
+- entities
+- contextual metadata
+
+Text:
+{text}
+"""
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        temperature=0,
+        messages=[
+            {"role": "system", "content": "You convert reasoning into structured analytic format."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response.choices[0].message.content
+
+
+# ---------------------------
+# 4️⃣ Analytical Integration
+# ---------------------------
+def analytical_integration(text):
+    prompt = f"""
+Perform analytical integration.
+Evaluate:
+- constraint density
+- decision tension
+- analytical indicators
+
+Text:
+{text}
+"""
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        temperature=0,
+        messages=[
+            {"role": "system", "content": "You perform analytical evaluation."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response.choices[0].message.content
+
+
+# ---------------------------
+# 5️⃣ Reflective Interpretation
+# ---------------------------
+def reflective_layer(text):
+    prompt = f"""
+Translate the analytical results into human-readable insights.
+Highlight uncertainty.
+Prevent over-interpretation.
+
+Text:
+{text}
+"""
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        temperature=0,
+        messages=[
+            {"role": "system", "content": "You provide reflective interpretation."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response.choices[0].message.content
+
+
+# ---------------------------
+# 6️⃣ Verification Loop
+# ---------------------------
+def verification_layer(text):
+    prompt = f"""
+Verify factual grounding.
+Remove analytical drift.
+Confirm epistemic integrity.
+
+Text:
+{text}
+"""
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        temperature=0,
+        messages=[
+            {"role": "system", "content": "You perform final verification pass."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response.choices[0].message.content
+
+
+# ---------------------------
+# 7️⃣ Output Classification
+# ---------------------------
+def classification_layer(text):
+    prompt = f"""
+Classify the content into:
+- Facts
+- Hypotheses
+- Analytical Indicators
+- Speculation
+- Open Questions
+
+Text:
+{text}
+"""
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        temperature=0,
+        messages=[
+            {"role": "system", "content": "You classify epistemic categories precisely."},
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return response.choices[0].message.content
+
+
+# ---------------------------
+# Flask Routes
+# ---------------------------
 @app.route("/")
 def home():
-    return render_template_string("""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Hybrid Test</title>
-    </head>
-    <body>
-        <h1>Hybrid Pipeline Test</h1>
-
-        <textarea id="question" placeholder="Context words"></textarea><br><br>
-        <textarea id="article" placeholder="Paste article text"></textarea><br><br>
-
-        <button onclick="run()">Run</button>
-
-        <pre id="output"></pre>
-
-        <script>
-        async function run() {
-            const article = document.getElementById("article").value;
-            const question = document.getElementById("question").value;
-
-            const res = await fetch("/analyze", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    article: article,
-                    context: question.split(" ")
-                })
-            });
-
-            const data = await res.json();
-            document.getElementById("output").innerText =
-                JSON.stringify(data, null, 2);
-        }
-        </script>
-    </body>
-    </html>
-    """)
+    return render_template("index.html")
 
 
-@app.route("/analyze", methods=["POST"])
-def analyze():
-    data = request.json
-    article = data.get("article", "")
-    context = data.get("context", [])
+@app.route("/run_pipeline", methods=["POST"])
+def run_pipeline():
 
-    result = hybrid_analysis(article, context)
+    data = request.get_json()
+    user_input = data.get("input", "")
 
-    return jsonify(result)
+    if not user_input.strip():
+        return jsonify({"error": "No input provided."})
+
+    intake = cognitive_intake(user_input)
+    stabilized = interpretation_stabilization(intake)
+    structured = translation_layer(stabilized)
+    analytics = analytical_integration(structured)
+    reflection = reflective_layer(analytics)
+    verified = verification_layer(reflection)
+    classified = classification_layer(verified)
+
+    return jsonify({
+        "result": classified
+    })
 
 
 if __name__ == "__main__":
