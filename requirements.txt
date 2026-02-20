@@ -4,3 +4,6 @@ numpy
 faiss-cpu
 sentence-transformers
 openai
+numpy
+faiss-cpu
+sentence-transformers
