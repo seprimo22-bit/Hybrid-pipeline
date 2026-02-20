@@ -1,3 +1,6 @@
 Flask
 gunicorn
 openai
+numpy
+faiss-cpu
+sentence-transformers
