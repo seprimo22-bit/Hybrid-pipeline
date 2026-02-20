@@ -1,64 +1,44 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Hybrid Integration Pipeline</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #111;
-            color: #eee;
-            padding: 40px;
-        }
-
-        textarea {
-            width: 100%;
-            height: 120px;
-            margin-bottom: 20px;
-            padding: 10px;
-            font-size: 16px;
-        }
-
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background: #ffaa00;
-            border: none;
-        }
-
-        #output {
-            margin-top: 30px;
-            padding: 20px;
-            background: #222;
-            white-space: pre-wrap;
-        }
-    </style>
+<title>Hybrid Integration Pipeline</title>
+<style>
+body { font-family: Arial; margin: 40px; }
+textarea { width: 100%; height: 120px; margin-bottom: 15px; }
+button { padding: 10px 20px; }
+pre { background: #eee; padding: 15px; white-space: pre-wrap; }
+</style>
 </head>
 <body>
 
-    <h1>Hybrid Integration Pipeline</h1>
+<h1>Hybrid Integration Pipeline</h1>
 
-    <textarea id="pipelineInput" placeholder="Enter your reasoning or question here..."></textarea>
+<h3>Question</h3>
+<textarea id="question"></textarea>
 
-    <button onclick="runPipeline()">Run Hybrid Pipeline</button>
+<h3>Article</h3>
+<textarea id="article"></textarea>
 
-    <div id="output">Awaiting input...</div>
+<button onclick="run()">Run Hybrid Analysis</button>
+
+<pre id="output">Awaiting input...</pre>
 
 <script>
-async function runPipeline() {
+async function run() {
 
-    const input = document.getElementById("pipelineInput").value;
+    const article = document.getElementById("article").value;
+    const question = document.getElementById("question").value;
 
-    const response = await fetch("/run_pipeline", {
+    const res = await fetch("/analyze", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ input: input })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            article: article,
+            question: question
+        })
     });
 
-    const data = await response.json();
-
+    const data = await res.json();
     document.getElementById("output").innerText =
         JSON.stringify(data, null, 2);
 }
