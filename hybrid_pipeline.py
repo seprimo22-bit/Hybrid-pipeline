@@ -1,43 +1,29 @@
 from flask import Flask, request, jsonify, render_template
 
+from engine.hybrid import HybridPipeline
+
 app = Flask(__name__)
 
-# -------------------------
-# Home Route
-# -------------------------
+# Initialize hybrid engine
+pipeline = HybridPipeline()
+
+
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-# -------------------------
-# Run Hybrid Pipeline Route
-# -------------------------
-@app.route("/run_pipeline", methods=["POST"])
-def run_pipeline():
-    data = request.get_json()
+@app.route("/analyze", methods=["POST"])
+def analyze():
+    data = request.json
 
-    user_input = data.get("input", "")
+    article = data.get("article", "")
+    context = data.get("context", [])
 
-    # Simulated Hybrid Pipeline Processing
-    result = {
-        "status": "success",
-        "classification": {
-            "Facts": [],
-            "Hypotheses": [],
-            "Analytical Indicators": [],
-            "Speculation": [],
-            "Open Questions": []
-        },
-        "received_input": user_input,
-        "message": "Hybrid Pipeline executed successfully."
-    }
+    result = pipeline.run(article, context)
 
     return jsonify(result)
 
 
-# -------------------------
-# Run Server (local only)
-# -------------------------
 if __name__ == "__main__":
     app.run(debug=True)
