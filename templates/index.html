@@ -1,68 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Hybrid Pipeline Engine</title>
-
+    <title>Hybrid Pipeline</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial;
             background: #111;
             color: #eee;
-            margin: 0;
             padding: 40px;
-        }
-
-        h1 {
-            color: #00cc88;
         }
 
         textarea {
             width: 100%;
-            height: 180px;
-            padding: 12px;
-            font-size: 16px;
-            margin-bottom: 20px;
+            height: 160px;
             background: #222;
             color: white;
             border: 1px solid #444;
-            border-radius: 6px;
+            padding: 10px;
         }
 
         button {
-            padding: 12px 24px;
-            font-size: 16px;
+            margin-top: 15px;
+            padding: 10px 20px;
             background: #00cc88;
             border: none;
-            border-radius: 6px;
             cursor: pointer;
         }
 
-        button:hover {
-            background: #00aa70;
-        }
-
-        .output {
-            margin-top: 30px;
+        pre {
+            margin-top: 20px;
             background: #1c1c1c;
-            padding: 20px;
-            border-radius: 8px;
-            white-space: pre-wrap;
-            overflow-x: auto;
+            padding: 15px;
         }
     </style>
 </head>
 <body>
 
-<h1>Hybrid Pipeline Interface</h1>
+<h1>Hybrid Pipeline Engine</h1>
 
-<textarea id="inputText" placeholder="Enter facts, article text, or pipeline input..."></textarea>
+<textarea id="inputText" placeholder="Enter text..."></textarea>
+<br>
+<button onclick="runPipeline()">Run Pipeline</button>
 
-<button onclick="runPipeline()">Run Hybrid Pipeline</button>
-
-<div class="output" id="resultBox">
-Waiting for input…
-</div>
+<pre id="outputBox">Waiting...</pre>
 
 <script>
 async function runPipeline() {
@@ -79,13 +59,13 @@ async function runPipeline() {
 
     const response = await fetch("/api/run", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {"Content-Type":"application/json"},
         body: JSON.stringify(payload)
     });
 
     const data = await response.json();
 
-    document.getElementById("resultBox").textContent =
+    document.getElementById("outputBox").textContent =
         JSON.stringify(data, null, 2);
 }
 </script>
