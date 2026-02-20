@@ -1,72 +1,67 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Hybrid Pipeline</title>
-    <style>
-        body {
-            font-family: Arial;
-            background: #111;
-            color: #eee;
-            padding: 40px;
-        }
+<title>Hybrid Integration Pipeline</title>
+<style>
+body {
+  background:#111;
+  color:#eee;
+  font-family:Arial;
+  padding:40px;
+}
 
-        textarea {
-            width: 100%;
-            height: 160px;
-            background: #222;
-            color: white;
-            border: 1px solid #444;
-            padding: 10px;
-        }
+textarea {
+  width:100%;
+  height:220px;
+  background:#222;
+  color:white;
+  padding:12px;
+  border-radius:6px;
+}
 
-        button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #00cc88;
-            border: none;
-            cursor: pointer;
-        }
+button {
+  padding:12px 24px;
+  margin-top:15px;
+  background:#00cc88;
+  border:none;
+  cursor:pointer;
+}
 
-        pre {
-            margin-top: 20px;
-            background: #1c1c1c;
-            padding: 15px;
-        }
-    </style>
+pre {
+  margin-top:25px;
+  background:#1c1c1c;
+  padding:20px;
+  white-space:pre-wrap;
+}
+</style>
 </head>
 <body>
 
-<h1>Hybrid Pipeline Engine</h1>
+<h1>Hybrid Integration Pipeline</h1>
 
-<textarea id="inputText" placeholder="Enter text..."></textarea>
+<textarea id="inputBox"
+placeholder="Enter reasoning, research, or analysis input..."></textarea>
+
 <br>
-<button onclick="runPipeline()">Run Pipeline</button>
+<button onclick="runPipeline()">Run Hybrid Pipeline</button>
 
-<pre id="outputBox">Waiting...</pre>
+<pre id="output">Awaiting input...</pre>
 
 <script>
 async function runPipeline() {
 
-    const text = document.getElementById("inputText").value;
+  const input = document.getElementById("inputBox").value;
 
-    const payload = {
-        facts: [text],
-        hypotheses: [],
-        speculation: [],
-        questions: [],
-        source: "web-ui"
-    };
+  const response = await fetch("/api/run", {
+    method:"POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({input})
+  });
 
-    const response = await fetch("/api/run", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(payload)
-    });
+  const data = await response.json();
 
-    const data = await response.json();
-
-    document.getElementById("outputBox").textContent =
-        JSON.stringify(data, null, 2);
+  document.getElementById("output").textContent =
+    data.analysis;
 }
 </script>
 
