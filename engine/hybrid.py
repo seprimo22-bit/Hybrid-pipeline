@@ -5,6 +5,10 @@ import os
 
 
 class HybridPipeline:
+    ...
+
+
+class HybridPipeline:
 
     def __init__(self, api_key=None):
 
