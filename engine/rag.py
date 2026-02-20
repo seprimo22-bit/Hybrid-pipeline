@@ -3,6 +3,7 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
+
 class RAGEngine:
 
     def __init__(self, index_path="vector.index"):
@@ -14,13 +15,7 @@ class RAGEngine:
         if os.path.exists(index_path):
             self.load_index()
 
-    # -----------------------------
-    # BUILD INDEX
-    # -----------------------------
     def build_index(self, documents):
-        """
-        documents: list of text chunks
-        """
         self.documents = documents
         embeddings = self.model.encode(documents)
 
@@ -30,15 +25,9 @@ class RAGEngine:
 
         faiss.write_index(self.index, self.index_path)
 
-    # -----------------------------
-    # LOAD EXISTING INDEX
-    # -----------------------------
     def load_index(self):
         self.index = faiss.read_index(self.index_path)
 
-    # -----------------------------
-    # RETRIEVE TOP MATCHES
-    # -----------------------------
     def retrieve(self, query, top_k=3):
         if self.index is None:
             return []
