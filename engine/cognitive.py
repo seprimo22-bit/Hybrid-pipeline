@@ -1,15 +1,18 @@
 import re
 
+AMBIGUOUS_TERMS = [
+    "may", "might", "could", "possibly", "suggests", "likely"
+]
 
 class CognitivePipeline:
 
     def extract_facts(self, text):
         sentences = re.split(r'[.!?]', text)
-
         triggers = [
             "is", "are", "was", "were",
             "shows", "indicates",
-            "demonstrates", "confirms"
+            "demonstrates", "confirms",
+            "developed", "reveals"
         ]
 
         return [
@@ -19,17 +22,16 @@ class CognitivePipeline:
         ]
 
     def ambiguity_score(self, text):
-        ambiguous = ["may", "might", "could", "possibly", "suggests"]
-        hits = sum(text.lower().count(a) for a in ambiguous)
-
+        hits = sum(text.lower().count(a) for a in AMBIGUOUS_TERMS)
         words = max(len(text.split()), 1)
-        return round(hits / words, 3)
+        return round(hits / words, 4)
 
-    def run(self, article, context=None):
-        facts = self.extract_facts(article)
-        ambiguity = self.ambiguity_score(article)
+    def run(self, text, context=None):
+        facts = self.extract_facts(text)
+        ambiguity = self.ambiguity_score(text)
 
         return {
             "facts": facts,
-            "ambiguity_score": ambiguity
+            "ambiguity_score": ambiguity,
+            "context_terms": context or []
         }
