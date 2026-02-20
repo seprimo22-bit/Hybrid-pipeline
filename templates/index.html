@@ -1,66 +1,108 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Hybrid Integration Pipeline</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #111;
-            color: #eee;
-            padding: 40px;
-        }
+<title>Campbell Hybrid Integration Pipeline</title>
 
-        textarea {
-            width: 100%;
-            height: 120px;
-            margin-bottom: 20px;
-            padding: 10px;
-            font-size: 16px;
-        }
+<style>
+body {
+    font-family: Arial;
+    margin: 40px;
+    max-width: 1000px;
+}
 
-        button {
-            padding: 12px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            background: #ffaa00;
-            border: none;
-        }
+textarea {
+    width: 100%;
+    height: 140px;
+    margin-bottom: 15px;
+}
 
-        #output {
-            margin-top: 30px;
-            padding: 20px;
-            background: #222;
-            white-space: pre-wrap;
-        }
-    </style>
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+}
+
+.section {
+    background: #f2f2f2;
+    padding: 15px;
+    margin-top: 20px;
+    white-space: pre-wrap;
+    border-left: 4px solid #444;
+}
+
+.metric {
+    margin-top: 10px;
+    font-weight: bold;
+}
+</style>
 </head>
 <body>
 
-    <h1>Hybrid Integration Pipeline</h1>
+<h1>Campbell Hybrid Integration Pipeline</h1>
 
-    <textarea id="pipelineInput" placeholder="Enter your reasoning or question here..."></textarea>
+<h3>Ask a Question (Context Keywords)</h3>
+<textarea id="question"
+placeholder="Example: Titan A16 constraint coherence ORR validation"></textarea>
 
-    <button onclick="runPipeline()">Run Hybrid Pipeline</button>
+<h3>Paste Article</h3>
+<textarea id="article"
+placeholder="Paste article text here..."></textarea>
 
-    <div id="output">Awaiting input...</div>
+<button onclick="runPipeline()">Run Hybrid Analysis</button>
+
+<div id="metrics" class="section"></div>
+<div id="classification" class="section"></div>
+<div id="retrieval" class="section"></div>
+<div id="interpretation" class="section"></div>
 
 <script>
 async function runPipeline() {
 
-    const input = document.getElementById("pipelineInput").value;
+    const article = document.getElementById("article").value;
+    const question = document.getElementById("question").value;
 
-    const response = await fetch("/run_pipeline", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ input: input })
-    });
+    document.getElementById("metrics").innerText = "Running Hybrid Analysis...";
+    document.getElementById("classification").innerText = "";
+    document.getElementById("retrieval").innerText = "";
+    document.getElementById("interpretation").innerText = "";
 
-    const data = await response.json();
+    try {
+        const response = await fetch("/analyze", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                article: article,
+                context: question ? question.split(" ") : []
+            })
+        });
 
-    document.getElementById("output").innerText =
-        JSON.stringify(data, null, 2);
+        const data = await response.json();
+
+        // Metrics
+        document.getElementById("metrics").innerText =
+            "Confidence Score: " + data.confidence_score + "\n" +
+            "Ambiguity Score: " + data.ambiguity_score + "\n" +
+            "Context Alignment: " + data.context_alignment_score + "\n" +
+            "Constraint Density: " + data.constraint_density;
+
+        // Classification
+        document.getElementById("classification").innerText =
+            "FACTS:\n" + data.classification.Facts.join("\n\n") +
+            "\n\nANALYTICAL INDICATORS:\n" + data.classification["Analytical Indicators"].join("\n\n");
+
+        // RAG Retrieval
+        document.getElementById("retrieval").innerText =
+            "Retrieved Context:\n" + data.retrieved_context.join("\n\n");
+
+        // Interpretation
+        document.getElementById("interpretation").innerText =
+            "Interpretation:\n" + data.interpretation.join("\n");
+
+    } catch (err) {
+        document.getElementById("metrics").innerText =
+            "Server error. Check logs.";
+    }
 }
 </script>
 
