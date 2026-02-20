@@ -64,6 +64,22 @@ async function runPipeline() {
     data.analysis;
 }
 </script>
+<script>
+async function runPipeline() {
+    const input = document.getElementById("pipelineInput").value;
 
+    const response = await fetch("/run_pipeline", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({input: input})
+    });
+
+    const data = await response.json();
+    document.getElementById("output").innerText =
+        JSON.stringify(data, null, 2);
+}
+</script>
 </body>
 </html>
