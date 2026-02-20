@@ -2,222 +2,161 @@ from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 import os
 
-# -----------------------------
-# Flask Initialization (FIXED)
-# -----------------------------
+# --------------------------------------------------
+# Flask Setup
+# --------------------------------------------------
 app = Flask(__name__)
 
-# -----------------------------
-# OpenAI Client
-# -----------------------------
+# OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# --------------------------------------------------
+# HEALTH CHECK ROUTES (IMPORTANT FOR DEBUGGING)
+# --------------------------------------------------
 
-# ==========================================================
-# 🟡 HYBRID PIPELINE — FULL 7-LAYER STRUCTURE
-# ==========================================================
-
-MODEL = "gpt-4o-mini"  # Accessible + stable on Render
+@app.route("/test")
+def test():
+    return "Backend alive."
 
 
-# ---------------------------
-# 1️⃣ Cognitive Intake Layer
-# ---------------------------
+@app.route("/debug", methods=["POST"])
+def debug():
+    return jsonify({
+        "received": request.get_json()
+    })
+
+
+# --------------------------------------------------
+# HYBRID PIPELINE LAYERS
+# --------------------------------------------------
+
+def llm_call(system, user):
+    """Safe wrapper so failures return readable errors."""
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini",
+            temperature=0,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": user}
+            ]
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        return f"LLM ERROR: {str(e)}"
+
+
+# 1️⃣ Cognitive Intake
 def cognitive_intake(text):
-
-    prompt = f"""
+    return llm_call(
+        "You perform epistemic intake filtering.",
+        f"""
 Separate factual statements from assumptions.
+Do not interpret.
 
-Return ONLY:
-
-FACTUAL_STATEMENTS:
-ASSUMPTIONS:
-
-Text:
+TEXT:
 {text}
 """
-
-    response = client.chat.completions.create(
-        model=MODEL,
-        temperature=0,
-        messages=[
-            {"role": "system", "content": "Epistemic intake filtering."},
-            {"role": "user", "content": prompt}
-        ]
     )
 
-    return response.choices[0].message.content
 
-
-# ---------------------------
 # 2️⃣ Interpretation Stabilization
-# ---------------------------
 def interpretation_stabilization(text):
-
-    prompt = f"""
+    return llm_call(
+        "You stabilize interpretation.",
+        f"""
 Normalize ambiguity.
 Remove narrative distortion.
-Preserve factual meaning.
 
-Text:
+TEXT:
 {text}
 """
-
-    response = client.chat.completions.create(
-        model=MODEL,
-        temperature=0,
-        messages=[
-            {"role": "system", "content": "Interpretation stabilization."},
-            {"role": "user", "content": prompt}
-        ]
     )
 
-    return response.choices[0].message.content
 
-
-# ---------------------------
 # 3️⃣ Translation Layer
-# ---------------------------
 def translation_layer(text):
-
-    prompt = f"""
-Convert reasoning into structured analytical data.
-
+    return llm_call(
+        "Convert reasoning into structured analytic format.",
+        f"""
 Identify:
-- Constraints
-- Entities
-- Contextual metadata
+- constraints
+- entities
+- contextual metadata
 
-Text:
+TEXT:
 {text}
 """
-
-    response = client.chat.completions.create(
-        model=MODEL,
-        temperature=0,
-        messages=[
-            {"role": "system", "content": "Analytical structuring."},
-            {"role": "user", "content": prompt}
-        ]
     )
 
-    return response.choices[0].message.content
 
-
-# ---------------------------
 # 4️⃣ Analytical Integration
-# ---------------------------
 def analytical_integration(text):
-
-    prompt = f"""
-Perform analytical integration.
-
+    return llm_call(
+        "Perform analytical evaluation.",
+        f"""
 Evaluate:
-- Constraint density
-- Decision tension
-- Analytical indicators
+- constraint density
+- decision tension
+- analytical indicators
 
-Text:
+TEXT:
 {text}
 """
-
-    response = client.chat.completions.create(
-        model=MODEL,
-        temperature=0,
-        messages=[
-            {"role": "system", "content": "Analytical integration."},
-            {"role": "user", "content": prompt}
-        ]
     )
 
-    return response.choices[0].message.content
 
-
-# ---------------------------
 # 5️⃣ Reflective Interpretation
-# ---------------------------
 def reflective_layer(text):
-
-    prompt = f"""
-Translate analytics into human-readable insight.
-
+    return llm_call(
+        "Provide reflective interpretation.",
+        f"""
+Translate analysis into human insights.
 Highlight uncertainty.
 Avoid over-interpretation.
 
-Text:
+TEXT:
 {text}
 """
-
-    response = client.chat.completions.create(
-        model=MODEL,
-        temperature=0,
-        messages=[
-            {"role": "system", "content": "Reflective interpretation."},
-            {"role": "user", "content": prompt}
-        ]
     )
 
-    return response.choices[0].message.content
 
-
-# ---------------------------
-# 6️⃣ Verification Loop
-# ---------------------------
+# 6️⃣ Verification Layer
 def verification_layer(text):
-
-    prompt = f"""
+    return llm_call(
+        "Final epistemic verification.",
+        f"""
 Verify factual grounding.
-Remove analytical drift.
+Remove analytic drift.
 
-Text:
+TEXT:
 {text}
 """
-
-    response = client.chat.completions.create(
-        model=MODEL,
-        temperature=0,
-        messages=[
-            {"role": "system", "content": "Verification pass."},
-            {"role": "user", "content": prompt}
-        ]
     )
 
-    return response.choices[0].message.content
 
-
-# ---------------------------
-# 7️⃣ Final Classification
-# ---------------------------
+# 7️⃣ Classification Layer
 def classification_layer(text):
+    return llm_call(
+        "Classify epistemic categories.",
+        f"""
+Classify into:
 
-    prompt = f"""
-Classify content into:
+Facts
+Hypotheses
+Indicators
+Speculation
+Open Questions
 
-Facts:
-Hypotheses:
-Analytical Indicators:
-Speculation:
-Open Questions:
-
-Text:
+TEXT:
 {text}
 """
-
-    response = client.chat.completions.create(
-        model=MODEL,
-        temperature=0,
-        messages=[
-            {"role": "system", "content": "Final epistemic classification."},
-            {"role": "user", "content": prompt}
-        ]
     )
 
-    return response.choices[0].message.content
 
-
-# ==========================================================
-# 🌐 Flask Routes
-# ==========================================================
+# --------------------------------------------------
+# ROUTES
+# --------------------------------------------------
 
 @app.route("/")
 def home():
@@ -227,31 +166,25 @@ def home():
 @app.route("/run_pipeline", methods=["POST"])
 def run_pipeline():
 
-    try:
-        data = request.get_json()
-        user_input = data.get("input", "")
+    data = request.get_json()
+    user_input = data.get("input", "")
 
-        if not user_input.strip():
-            return jsonify({"error": "No input provided."})
+    if not user_input.strip():
+        return jsonify({"error": "No input provided."})
 
-        # Run full HIP pipeline
-        intake = cognitive_intake(user_input)
-        stabilized = interpretation_stabilization(intake)
-        structured = translation_layer(stabilized)
-        analytics = analytical_integration(structured)
-        reflection = reflective_layer(analytics)
-        verified = verification_layer(reflection)
-        classified = classification_layer(verified)
+    # Pipeline execution
+    intake = cognitive_intake(user_input)
+    stabilized = interpretation_stabilization(intake)
+    structured = translation_layer(stabilized)
+    analytics = analytical_integration(structured)
+    reflection = reflective_layer(analytics)
+    verified = verification_layer(reflection)
+    classified = classification_layer(verified)
 
-        return jsonify({"result": classified})
-
-    except Exception as e:
-        # VERY IMPORTANT for Render debugging
-        return jsonify({"error": str(e)})
+    return jsonify({
+        "result": classified
+    })
 
 
-# ==========================================================
-# Local Dev Only
-# ==========================================================
 if __name__ == "__main__":
     app.run(debug=True)
