@@ -1,3 +1,1 @@
-class HybridPipeline:
-    def __init__(self):
-        self.rag = RAGEngine()
+from .rag import RAGEngine
