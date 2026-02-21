@@ -26,7 +26,7 @@ def load_documents():
                 with open(path, "r", encoding="utf-8") as f:
                     corpus.append(f.read())
             except Exception:
-                pass
+                continue
 
     return "\n\n".join(corpus[:5])
 
@@ -35,38 +35,46 @@ def load_documents():
 # HYBRID PIPELINE CORE
 # ---------------------------------
 
-def hybrid_pipeline(user_input):
+def hybrid_pipeline(payload):
 
     documents = load_documents()
 
+    # Combine structured input into one reasoning block
+    combined_input = "\n".join(
+        payload.get("facts", []) +
+        payload.get("hypotheses", []) +
+        payload.get("speculation", []) +
+        payload.get("questions", [])
+    )
+
     prompt = f"""
-You are running a Hybrid Integration Pipeline.
+You are executing the Hybrid Integration Pipeline (HIP).
 
-This pipeline bridges human reasoning clarity and analytical computation.
+STRICTLY follow this structure:
 
-Follow this EXACT flow:
+1️⃣ Cognitive Intake
+- Separate facts vs assumptions.
 
-1. Cognitive Intake:
-Separate facts vs assumptions from the user input.
+2️⃣ Interpretation Stabilization
+- Remove emotional framing.
+- Clarify ambiguity.
 
-2. Interpretation Stabilization:
-Remove emotional framing, clarify ambiguity.
+3️⃣ Translation Layer
+- Extract constraints.
+- Identify variables.
+- Structure reasoning elements.
 
-3. Translation Layer:
-Convert reasoning into structured analytical elements.
+4️⃣ Analytical Integration
+- Compare with research corpus.
+- Identify alignment, contradiction, constraint tension.
 
-4. Analytical Integration:
-Compare reasoning with provided research corpus.
-Identify alignments, contradictions, constraint tensions.
+5️⃣ Reflective Interpretation
+- Translate findings into plain-language insight.
 
-5. Reflective Interpretation:
-Translate analytics into plain human insight.
+6️⃣ Verification
+- Remove unsupported claims.
 
-6. Verification:
-Ensure no unsupported claims remain.
-
-7. Output Classification:
-Return structured sections:
+7️⃣ Final Structured Output (Return EXACT headings):
 
 Facts:
 Hypotheses:
@@ -76,16 +84,19 @@ Open Questions:
 Reflective Summary:
 
 USER INPUT:
-{user_input}
+{combined_input}
 
-RESEARCH DOCUMENTS:
+RESEARCH CORPUS:
 {documents}
 """
 
     response = client.chat.completions.create(
         model="gpt-4o",
         temperature=0.2,
-        messages=[{"role": "user", "content": prompt}]
+        messages=[
+            {"role": "system", "content": "You are a structured reasoning engine."},
+            {"role": "user", "content": prompt}
+        ]
     )
 
     return response.choices[0].message.content
@@ -102,16 +113,28 @@ def index():
 
 @app.route("/api/run", methods=["POST"])
 def run_pipeline():
-    data = request.json
-    text = data.get("input", "")
+    try:
+        payload = request.json
 
-    result = hybrid_pipeline(text)
+        if not payload:
+            return jsonify({"error": "No input provided"}), 400
 
-    return jsonify({"analysis": result})
+        result = hybrid_pipeline(payload)
+
+        return jsonify({
+            "status": "success",
+            "analysis": result
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
 
 
 # ---------------------------------
-# LOCAL / RENDER ENTRY
+# ENTRY POINT
 # ---------------------------------
 
 if __name__ == "__main__":
