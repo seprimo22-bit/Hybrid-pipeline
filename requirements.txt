@@ -2,5 +2,4 @@ flask
 gunicorn
 numpy
 faiss-cpu
-sentence-transformers
 openai
