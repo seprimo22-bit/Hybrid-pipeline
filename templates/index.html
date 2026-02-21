@@ -39,7 +39,7 @@ button {
 
 <h1>Campbell Hybrid Integration Pipeline</h1>
 
-<h3>Ask a Question (Context Keywords)</h3>
+<h3>Ask a Question / Context Keywords</h3>
 <textarea id="question"
 placeholder="Example: Titan A16 constraint coherence ORR validation"></textarea>
 
@@ -68,9 +68,7 @@ async function runPipeline() {
     try {
         const response = await fetch("/analyze", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 article: article,
                 context: question ? question.split(" ") : []
@@ -79,32 +77,8 @@ async function runPipeline() {
 
         const data = await response.json();
 
-        // Metrics
         document.getElementById("metrics").innerText =
             "Confidence Score: " + data.confidence_score + "\n" +
             "Ambiguity Score: " + data.ambiguity_score + "\n" +
             "Context Alignment: " + data.context_alignment_score + "\n" +
-            "Constraint Density: " + data.constraint_density;
-
-        // Classification
-        document.getElementById("classification").innerText =
-            "FACTS:\n" + data.classification.Facts.join("\n\n") +
-            "\n\nANALYTICAL INDICATORS:\n" + data.classification["Analytical Indicators"].join("\n\n");
-
-        // RAG Retrieval
-        document.getElementById("retrieval").innerText =
-            "Retrieved Context:\n" + data.retrieved_context.join("\n\n");
-
-        // Interpretation
-        document.getElementById("interpretation").innerText =
-            "Interpretation:\n" + data.interpretation.join("\n");
-
-    } catch (err) {
-        document.getElementById("metrics").innerText =
-            "Server error. Check logs.";
-    }
-}
-</script>
-
-</body>
-</html>
+            "Constraint Density: "
