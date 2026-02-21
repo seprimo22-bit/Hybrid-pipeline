@@ -1,1 +1,83 @@
+# Hybrid Pipeline Examples
 
+This file contains example inputs and expected output structure
+for the Hybrid Integration Pipeline (HIP).
+
+These examples are illustrative only and not definitive analyses.
+
+---
+
+## Example 1 — Simple Reasoning Input
+
+### Input Payload
+
+```json
+{
+  "facts": [
+    "Titanium alloys often have high strength-to-weight ratios."
+  ],
+  "hypotheses": [
+    "Adding quasicrystal structures may improve resonance damping."
+  ],
+  "speculation": [
+    "This could reduce vibrational fatigue in aerospace materials."
+  ],
+  "questions": [
+    "Has this been experimentally validated?"
+  ],
+  "source": "web-ui"
+}
+
+
+{
+  "facts": [
+    "Structured reasoning pipelines reduce ambiguity."
+  ],
+  "hypotheses": [
+    "A hybrid cognitive-analytic pipeline may improve decision quality."
+  ],
+  "speculation": [],
+  "questions": [
+    "What limitations might exist?"
+  ],
+  "source": "web-ui"
+}
+
+
+
+
+
+{
+  "facts": ["Water freezes at 0°C at standard pressure."],
+  "hypotheses": [],
+  "speculation": [],
+  "questions": [],
+  "source": "web-ui"
+}
+
+
+---
+
+## ⭐ Why this helps your project
+
+For your specific Hybrid Pipeline:
+
+- Reinforces ORR / constraint reasoning
+- Prevents misuse of the app
+- Makes debugging way easier
+- Shows seriousness to reviewers/investors
+- Helps future contributors understand intent fast
+
+Honestly, most research-style apps **should have an examples file.**
+
+---
+
+If you want next, I can:
+
+✅ Create a `README.md` that ties everything together  
+✅ Do a full repo structure audit  
+✅ Add testing examples for API calls  
+✅ Make a “public explanation” version  
+✅ Or help polish this into a research-grade project repo  
+
+Just say 👍
