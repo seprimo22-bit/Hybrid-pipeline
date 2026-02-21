@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, request, jsonify, render_template
 from openai import OpenAI
 
@@ -9,19 +10,17 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 documents = []
 
 
-# -------------------------------
+# -----------------------------
 # HOME PAGE
-# -------------------------------
-
+# -----------------------------
 @app.route("/")
 def home():
     return render_template("index.html")
 
 
-# -------------------------------
-# DOCUMENT INDEXING (OPTIONAL)
-# -------------------------------
-
+# -----------------------------
+# DOCUMENT INDEXING (optional)
+# -----------------------------
 @app.route("/index", methods=["POST"])
 def index_docs():
     global documents
@@ -29,51 +28,38 @@ def index_docs():
     return jsonify({"indexed": len(documents)})
 
 
-# -------------------------------
-# HYBRID PIPELINE
-# -------------------------------
-
+# -----------------------------
+# HYBRID PIPELINE ENGINE
+# -----------------------------
 @app.route("/ask", methods=["POST"])
 def ask():
 
     question = request.json.get("question", "")
-
     corpus = "\n\n".join(documents[:5])
 
     prompt = f"""
-You are running the Hybrid Integration Pipeline.
+You are the Hybrid Integration Pipeline.
 
-Follow this structure EXACTLY:
+Return ONLY valid JSON in this structure:
 
-1. Cognitive Intake:
-Separate facts vs assumptions.
+{{
+  "classification": "",
+  "reflection": "",
+  "analytics": {{}},
+  "verified": true
+}}
 
-2. Interpretation Stabilization:
-Clarify ambiguity and remove emotional framing.
+Pipeline method:
 
-3. Translation Layer:
-Extract constraints, variables, reasoning structure.
-
-4. Analytical Integration:
-Compare with research corpus:
+1. Separate facts vs assumptions.
+2. Stabilize interpretation.
+3. Extract analytical constraints.
+4. Compare with research corpus:
 {corpus}
+5. Provide reflective insight.
+6. Verify claims carefully.
 
-5. Reflective Interpretation:
-Return plain-language insight.
-
-6. Verification:
-Remove unsupported claims.
-
-7. Output Classification:
-
-Return JSON with keys:
-
-classification
-reflection
-analytics
-verified
-
-USER INPUT:
+User input:
 {question}
 """
 
@@ -83,21 +69,23 @@ USER INPUT:
         messages=[{"role": "user", "content": prompt}]
     )
 
-    text = response.choices[0].message.content
+    content = response.choices[0].message.content.strip()
 
-    # Fallback parse (keeps UI working even if formatting varies)
-    return jsonify({
-        "classification": "Hybrid Analysis",
-        "reflection": text,
-        "analytics": {},
-        "verified": True
-    })
+    try:
+        parsed = json.loads(content)
+        return jsonify(parsed)
+    except:
+        return jsonify({
+            "classification": "Hybrid Analysis",
+            "reflection": content,
+            "analytics": {},
+            "verified": False
+        })
 
 
-# -------------------------------
-# LOCAL RUN
-# -------------------------------
-
+# -----------------------------
+# LOCAL RUN / RENDER ENTRY
+# -----------------------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
