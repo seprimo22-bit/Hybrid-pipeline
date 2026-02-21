@@ -2,5 +2,6 @@ flask
 gunicorn
 numpy
 faiss-cpu
-sentence-transformers
 openai
+sentence-transformers --no-deps
+torch==2.2.2+cpu
