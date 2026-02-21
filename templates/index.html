@@ -1,2 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hybrid Integration Pipeline</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+        }
 
+        textarea {
+            width: 100%;
+            height: 120px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+        }
+
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #eee;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Hybrid Integration Pipeline</h2>
+
+<textarea id="question"
+placeholder="Enter question or reasoning input"></textarea>
+
+<br>
+<button onclick="send()">Run Pipeline</button>
+
+<div id="output"></div>
+
+<script>
+async function send() {
+
+    const question = document.getElementById("question").value;
+
+    const res = await fetch("/ask", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({question})
+    });
+
+    const data = await res.json();
+
+    document.getElementById("output").innerHTML =
+        `<b>Classification:</b> ${data.classification}<br>
+         <b>Reflection:</b> ${data.reflection}<br>
+         <b>Analytics:</b> ${JSON.stringify(data.analytics)}<br>
+         <b>Verified:</b> ${data.verified}`;
+}
+</script>
+
+</body>
+</html>
 
